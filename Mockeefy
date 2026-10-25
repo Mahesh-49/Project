@@ -1,0 +1,313 @@
+
+package tests;
+
+import java.time.Duration;
+
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.edge.EdgeDriver;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
+import org.testng.Assert;
+import org.testng.annotations.AfterTest;
+import org.testng.annotations.BeforeTest;
+import org.testng.annotations.Test;
+
+public class ProfileAndSkillsTest {
+
+    WebDriver driver;
+    WebDriverWait wait;
+
+    String baseURL = "https://productivity-web-app-one.vercel.app/";
+    String skillsURL = "https://productivity-web-app-one.vercel.app/skills";
+
+    @BeforeTest
+    public void beforeTest() {
+
+        driver = new EdgeDriver();
+        driver.manage().window().maximize();
+
+        driver.manage().timeouts()
+               .implicitlyWait(Duration.ofSeconds(10));
+
+        wait = new WebDriverWait(driver, Duration.ofSeconds(15));
+
+        driver.get(baseURL);
+
+        System.out.println("Application launched successfully");
+    }
+
+    // Reusable methods
+
+    public void openProfileMenu() {
+        driver.get(baseURL);
+
+        wait.until(ExpectedConditions.elementToBeClickable(
+            By.xpath("/html/body/div/div[2]/div/header/div[2]/div[3]/button")
+        )).click();
+    }
+
+    public void openProfilePage() {
+        openProfileMenu();
+
+        wait.until(ExpectedConditions.elementToBeClickable(
+            By.xpath("/html/body/div/div[2]/div/header/div[2]/div[3]/div/div[2]/button[1]")
+        )).click();
+    }
+
+    public void openCreateProfileForm() {
+        openProfilePage();
+
+        wait.until(ExpectedConditions.elementToBeClickable(
+            By.xpath("/html/body/div/div[2]/div/main/div/div[2]/div[2]/div/button")
+        )).click();
+    }
+
+    public void openSkillsPage() {
+        driver.get(baseURL);
+
+        wait.until(ExpectedConditions.elementToBeClickable(
+            By.xpath("//*[normalize-space()='Learning & Skills']")
+        )).click();
+
+        wait.until(ExpectedConditions.visibilityOfElementLocated(
+            By.xpath("//*[contains(normalize-space(),'Learning & Skills Mastery')]")
+        ));
+    }
+
+    public void printURL(String expectedURL) {
+        System.out.println("Expected URL: " + expectedURL);
+        System.out.println("Actual URL:   " + driver.getCurrentUrl());
+    }
+
+    // TEST CASE 1: Verify application URL
+
+    @Test(priority = 1)
+    public void verifyApplicationURL() {
+
+        driver.get(baseURL);
+
+        printURL(baseURL);
+
+        Assert.assertEquals(driver.getCurrentUrl(), baseURL);
+    }
+
+    // TEST CASE 2: Verify profile menu
+
+    @Test(priority = 2)
+    public void verifyProfileMenu() {
+
+        openProfileMenu();
+
+        boolean menuDisplayed = wait.until(
+            ExpectedConditions.visibilityOfElementLocated(
+                By.xpath("/html/body/div/div[2]/div/header/div[2]/div[3]/div")
+            )
+        ).isDisplayed();
+
+        printURL(baseURL);
+
+        Assert.assertTrue(menuDisplayed);
+    }
+
+    // TEST CASE 3: Verify profile page
+
+    @Test(priority = 3)
+    public void verifyProfilePage() {
+
+        openProfilePage();
+
+        boolean profilePageDisplayed = wait.until(
+            ExpectedConditions.visibilityOfElementLocated(
+                By.xpath("/html/body/div/div[2]/div/main")
+            )
+        ).isDisplayed();
+
+        printURL(baseURL);
+
+        Assert.assertTrue(profilePageDisplayed);
+    }
+
+    // TEST CASE 4: Verify create profile form
+
+    @Test(priority = 4)
+    public void verifyProfileCreationForm() {
+
+        openCreateProfileForm();
+
+        boolean formDisplayed = wait.until(
+            ExpectedConditions.visibilityOfElementLocated(
+                By.xpath("/html/body/div/div[2]/div/main/div/div[2]/div[2]/form")
+            )
+        ).isDisplayed();
+
+        printURL(baseURL);
+
+        Assert.assertTrue(formDisplayed);
+    }
+
+    // TEST CASE 5: Enter profile details
+
+    @Test(priority = 5)
+    public void enterProfileDetails() {
+
+        openCreateProfileForm();
+
+        WebElement name = wait.until(
+            ExpectedConditions.visibilityOfElementLocated(
+                By.xpath("/html/body/div/div[2]/div/main/div/div[2]/div[2]/form/div[2]/div[1]/input")
+            )
+        );
+
+        name.clear();
+        name.sendKeys("R Maheshwaran");
+
+        WebElement email = wait.until(
+            ExpectedConditions.visibilityOfElementLocated(
+                By.xpath("//input[@type='email']")
+            )
+        );
+
+        email.clear();
+        email.sendKeys("mwaran109@gmail.com");
+
+        WebElement degree = wait.until(
+            ExpectedConditions.visibilityOfElementLocated(
+                By.xpath("//input[contains(@placeholder,'Degree') or contains(@placeholder,'degree')]")
+            )
+        );
+
+        degree.clear();
+        degree.sendKeys("B.Tech Leather Technology");
+
+        printURL(baseURL);
+
+        Assert.assertEquals(name.getAttribute("value"), "R Maheshwaran");
+    }
+
+    // TEST CASE 6: Navigate to Learning & Skills
+
+    @Test(priority = 6)
+    public void navigateToSkills() {
+
+        openSkillsPage();
+
+        printURL(skillsURL);
+
+        Assert.assertTrue(
+            driver.getCurrentUrl().contains("/skills"),
+            "Learning & Skills URL was not opened"
+        );
+    }
+
+    // TEST CASE 7: Verify Learning & Skills page
+
+    @Test(priority = 7)
+    public void verifySkillsPage() {
+
+        openSkillsPage();
+
+        String heading = wait.until(
+            ExpectedConditions.visibilityOfElementLocated(
+                By.xpath("//*[contains(normalize-space(),'Learning & Skills Mastery')]")
+            )
+        ).getText();
+
+        printURL(skillsURL);
+
+        Assert.assertTrue(heading.contains("Learning & Skills Mastery"));
+    }
+
+    // TEST CASE 8: Open Add New Skill form
+
+    @Test(priority = 8)
+    public void openAddSkillForm() {
+
+        openSkillsPage();
+
+        wait.until(ExpectedConditions.elementToBeClickable(
+            By.xpath("//button[contains(normalize-space(.),'Add New Skill')]")
+        )).click();
+
+        boolean inputDisplayed = wait.until(
+            ExpectedConditions.visibilityOfElementLocated(
+                By.xpath("//input[contains(@placeholder,'React') or @placeholder='Skill Name']")
+            )
+        ).isDisplayed();
+
+        printURL(skillsURL);
+
+        Assert.assertTrue(inputDisplayed);
+    }
+
+    // TEST CASE 9: Enter skill details
+
+    @Test(priority = 9)
+    public void enterSkillDetails() {
+
+        openSkillsPage();
+
+        wait.until(ExpectedConditions.elementToBeClickable(
+            By.xpath("//button[contains(normalize-space(.),'Add New Skill')]")
+        )).click();
+
+        WebElement skillName = wait.until(
+            ExpectedConditions.visibilityOfElementLocated(
+                By.xpath("//input[contains(@placeholder,'React') or @placeholder='Skill Name']")
+            )
+        );
+
+        skillName.clear();
+        skillName.sendKeys("Selenium");
+
+        printURL(skillsURL);
+
+        Assert.assertEquals(skillName.getAttribute("value"), "Selenium");
+    }
+
+    // TEST CASE 10: Save skill
+
+    @Test(priority = 10)
+    public void saveSkill() {
+
+        openSkillsPage();
+
+        wait.until(ExpectedConditions.elementToBeClickable(
+            By.xpath("//button[contains(normalize-space(.),'Add New Skill')]")
+        )).click();
+
+        WebElement skillName = wait.until(
+            ExpectedConditions.visibilityOfElementLocated(
+                By.xpath("//input[contains(@placeholder,'React') or @placeholder='Skill Name']")
+            )
+        );
+
+        skillName.clear();
+        skillName.sendKeys("Selenium");
+
+        wait.until(ExpectedConditions.elementToBeClickable(
+            By.xpath("//button[contains(normalize-space(.),'Save Skill')]")
+        )).click();
+
+        boolean skillSaved = wait.until(
+            ExpectedConditions.visibilityOfElementLocated(
+                By.xpath("//*[contains(normalize-space(),'Selenium')]")
+            )
+        ).isDisplayed();
+
+        printURL(skillsURL);
+
+        Assert.assertTrue(skillSaved);
+    }
+
+    @AfterTest
+    public void afterTest() {
+
+        if (driver != null) {
+            driver.quit();
+        }
+
+        System.out.println("Browser closed successfully");
+    }
+}
